@@ -143,8 +143,8 @@ def post_run(filename, smiles):
 
 if __name__ == "__main__":
 
-    st.title('SAAD - *S*emiautomatic *A*mino *A*cid *D*eployer')
-    st.write('### Tetrapeptide conformational embedder')
+    st.title('BeTTeR - *Be*ta *T*urn *Te*tramers *R*otator')
+    st.write('### Generate pre-folded beta-turn peptide conformations')
     st.write('© Nicolò Tampellini - 2023')
 
     tab1, tab2 = st.tabs([':gear: Embedder', ':pill: Amino acids and C/N caps'])
