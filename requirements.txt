@@ -1,8 +1,0 @@
-cclib==1.7.2
-networkx==2.8.8
-numba==0.56.4
-numpy==1.22.3
-periodictable==1.6.1
-py3Dmol==1.8.1
-streamlit==1.16.0
-rdkit==2022.9.3

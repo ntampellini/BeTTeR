@@ -1,0 +1,14 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numba=0.56.4
+  - numpy=1.22.3
+  - rdkit=2022.09.3
+  - pip:
+      - cclib==1.7.2
+      - periodictable==1.6.1
+      - networkx==2.8.8
+      - py3dmol==1.8.1
+      - streamlit==1.16.0
