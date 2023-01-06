@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - pip=22.3.1
   - numba=0.56.4
   - numpy=1.22.3
   - rdkit=2022.09.3
