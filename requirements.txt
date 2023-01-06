@@ -2,7 +2,8 @@ cclib==1.7.2
 networkx==2.8.8
 numba==0.56.4
 numpy==1.22.3
-openbabel
+openbabel==3.1.1.1
+python3-openbabel
 periodictable==1.6.1
 py3Dmol==2.0.0.post2
 rdkit==2022.9.3
