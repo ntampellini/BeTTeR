@@ -10,7 +10,7 @@ from functions import (_get_rotation_mask, _get_torsions, clean_directory,
                        write_xyz)
 from lib import (build_peptide, get_beta_hairpin_hb,
                       get_beta_turn_torsion_indices, smiles_graphize,
-                      turn_angles_dict)
+                      turn_angles_dict, correct_amides)
 
 
 def run(smiles:str, name='', turn='two prime beta hairpin', tweak=True, opt=False):
@@ -34,6 +34,9 @@ def run(smiles:str, name='', turn='two prime beta hairpin', tweak=True, opt=Fals
     graph = smiles_graphize(smiles, data.atomnos)
 
     print('Rotating peptide in the right conformation...')
+
+    # rotate amides the right way
+    coords = correct_amides(coords, graph, mw)
 
     min_d = abs(norm_of(coords[hairpin_hb[0]] - coords[hairpin_hb[1]]) - 2)
     for angle_set in turn_angles_dict[turn]:

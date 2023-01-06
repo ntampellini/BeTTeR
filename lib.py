@@ -7,7 +7,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 from rdkit.Chem.rdmolops import AddHs, GetAdjacencyMatrix
 
-from functions import dihedral, write_xyz
+from functions import _get_rotation_mask, dihedral, rotate_dihedral, write_xyz
 
 fragment_dict = {
     # i
@@ -136,6 +136,18 @@ def build_peptide(string):
 
     smi_list = [fragment_dict[frag] for frag in reversed(string.split('-'))]
     return smiles_joiner(smi_list)
+
+def correct_amides(coords, graph, rdkit_mol):
+    '''
+    Rotate all secondary amides (and carbamates) in the more stable trans conformation.
+    '''
+    amides = rdkit_mol.GetSubstructMatches(Chem.MolFromSmarts('N([H])C(=O)'))
+    amides = [[b, a, c, d] for a, b, c, d in amides]
+    for quadruplet in amides:
+        current_angle = dihedral(coords[quadruplet])
+        mask = _get_rotation_mask(graph, quadruplet)
+        coords = rotate_dihedral(coords, quadruplet, 180-current_angle, mask=mask)
+    return coords
 
 def smiles_joiner(list_of_fragments, n=9):
     # pick the first two fragments to join and replace [n*] with n

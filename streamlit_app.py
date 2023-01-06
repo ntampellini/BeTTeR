@@ -10,9 +10,10 @@ from functions import (_get_rotation_mask, _get_torsions, clean_directory,
                        compenetration_check, dihedral, norm_of, openbabel_opt,
                        read_xyz, rotate_dihedral, sanitize_conformer,
                        write_xyz)
-from lib import (build_peptide, draw, get_beta_hairpin_hb,
-                      get_beta_turn_torsion_indices, show, smiles_graphize,
-                      turn_angles_dict, fragment_dict)
+from lib import (build_peptide, correct_amides, draw, fragment_dict,
+                 get_beta_hairpin_hb, get_beta_turn_torsion_indices, show,
+                 smiles_graphize, turn_angles_dict)
+
 
 @st.cache
 def get_frags_image():
@@ -51,6 +52,9 @@ def streamlit_run(smiles, name, turn, tweak, opt):
 
     with st.spinner(text="Rotating peptide in the right conformation..."):
 
+        # rotate amides the right way
+        coords = correct_amides(coords, graph, mw)
+
         min_d = abs(norm_of(coords[hairpin_hb[0]] - coords[hairpin_hb[1]]) - 2)
         for angle_set in turn_angles_dict[turn]:
             temp_coords = deepcopy(coords)
@@ -71,7 +75,7 @@ def streamlit_run(smiles, name, turn, tweak, opt):
 
     with st.spinner(text="Sanitizing other rotable bonds..."):
 
-        # sanitize it
+        # sanitize it to remove clashes/compenetrations
         coords = sanitize_conformer(coords, torsions, graph)
 
     if tweak:
