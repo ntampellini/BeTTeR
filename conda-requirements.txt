@@ -1,1 +1,4 @@
 openbabel==3.1.1
+rdkit==2022.9.3
+nox
+cairo
