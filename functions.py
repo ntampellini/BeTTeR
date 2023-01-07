@@ -7,7 +7,7 @@ import networkx as nx
 import numba as nb
 import numpy as np
 from cclib.io import ccread
-from openbabel import openbabel as ob
+# from openbabel import openbabel as ob
 from periodictable import core, covalent_radius, mass
 
 pt = core.PeriodicTable(table="H=1")
@@ -807,117 +807,117 @@ def sanitize_conformer(coords, torsions, graph, thresh=1.5):
                 rotations += 1
                 print(f"Fixing conformation: torsion {t}, {rotations} turn", end='\r')
 
-def openbabel_opt(      structure,
-                        atomnos,
-                        constrained_indexes,
-                        constrained_distances=None,
-                        tight_constraint=True,
-                        method='MMFF94',
-                        nsteps=1000,
-                        title='temp_ob',
-                        **kwargs,
-                    ):
-        '''
-        tight_constraint: False uses the native implementation,
-                          True uses a more accurate recursive one 
-        return : MM-optimized structure (UFF/MMFF94)
-        '''
+# def openbabel_opt(      structure,
+#                         atomnos,
+#                         constrained_indexes,
+#                         constrained_distances=None,
+#                         tight_constraint=True,
+#                         method='MMFF94',
+#                         nsteps=1000,
+#                         title='temp_ob',
+#                         **kwargs,
+#                     ):
+#         '''
+#         tight_constraint: False uses the native implementation,
+#                           True uses a more accurate recursive one 
+#         return : MM-optimized structure (UFF/MMFF94)
+#         '''
 
-        assert method in ('UFF', 'MMFF94', 'Ghemical', 'GAFF'), 'OpenBabel implements only the UFF, MMFF94, Ghemical and GAFF Force Fields.'
+#         assert method in ('UFF', 'MMFF94', 'Ghemical', 'GAFF'), 'OpenBabel implements only the UFF, MMFF94, Ghemical and GAFF Force Fields.'
 
-        # If we have any target distance to impose,
-        # the most accurate way to do it is to manually
-        # move the second atom and then freeze both atom
-        # in place during optimization. If we would have
-        # to move the second atom too much we do that in
-        # small steps of 0.2 A, recursively, to avoid having
-        # openbabel come up with weird bonding topologies,
-        # ending in scrambling.
+#         # If we have any target distance to impose,
+#         # the most accurate way to do it is to manually
+#         # move the second atom and then freeze both atom
+#         # in place during optimization. If we would have
+#         # to move the second atom too much we do that in
+#         # small steps of 0.2 A, recursively, to avoid having
+#         # openbabel come up with weird bonding topologies,
+#         # ending in scrambling.
 
-        if constrained_distances is not None and tight_constraint:
-            for target_d, (a, b) in zip(constrained_distances, constrained_indexes):
-                d = norm_of(structure[b] - structure[a])
-                delta = d - target_d
+#         if constrained_distances is not None and tight_constraint:
+#             for target_d, (a, b) in zip(constrained_distances, constrained_indexes):
+#                 d = norm_of(structure[b] - structure[a])
+#                 delta = d - target_d
 
-                if abs(delta) > 0.2:
-                    sign = (d > target_d)
-                    recursive_c_d = [d + 0.2 * sign for d in constrained_distances]
+#                 if abs(delta) > 0.2:
+#                     sign = (d > target_d)
+#                     recursive_c_d = [d + 0.2 * sign for d in constrained_distances]
 
-                    structure = openbabel_opt(
-                                                    structure,
-                                                    atomnos,
-                                                    constrained_indexes,
-                                                    constrained_distances=recursive_c_d,
-                                                    tight_constraint=True, 
-                                                    method=method,
-                                                    nsteps=nsteps,
-                                                    title=title,
-                                                    **kwargs,
-                                                )
+#                     structure = openbabel_opt(
+#                                                     structure,
+#                                                     atomnos,
+#                                                     constrained_indexes,
+#                                                     constrained_distances=recursive_c_d,
+#                                                     tight_constraint=True, 
+#                                                     method=method,
+#                                                     nsteps=nsteps,
+#                                                     title=title,
+#                                                     **kwargs,
+#                                                 )
 
-                d = norm_of(structure[b] - structure[a])
-                delta = d - target_d
-                structure[b] -= norm(structure[b] - structure[a]) * delta
+#                 d = norm_of(structure[b] - structure[a])
+#                 delta = d - target_d
+#                 structure[b] -= norm(structure[b] - structure[a]) * delta
 
-        filename=f'{title}_in.xyz'
+#         filename=f'{title}_in.xyz'
 
-        with open(filename, 'w') as f:
-            write_xyz(structure, atomnos, f)
-        # input()
-        outname = f'{title}_out.xyz'
+#         with open(filename, 'w') as f:
+#             write_xyz(structure, atomnos, f)
+#         # input()
+#         outname = f'{title}_out.xyz'
 
-        # Standard openbabel molecule load
-        conv = ob.OBConversion()
-        conv.SetInAndOutFormats('xyz','xyz')
-        mol = ob.OBMol()
-        more = conv.ReadFile(mol, filename)
-        i = 0
+#         # Standard openbabel molecule load
+#         conv = ob.OBConversion()
+#         conv.SetInAndOutFormats('xyz','xyz')
+#         mol = ob.OBMol()
+#         more = conv.ReadFile(mol, filename)
+#         i = 0
 
-        # Define constraints
-        constraints = ob.OBFFConstraints()
+#         # Define constraints
+#         constraints = ob.OBFFConstraints()
 
-        for i, (a, b) in enumerate(constrained_indexes):
+#         for i, (a, b) in enumerate(constrained_indexes):
 
-            # Adding a distance constraint does not lead to accurate results,
-            # so the backup solution is to freeze the atoms in place
-            if tight_constraint:
-                constraints.AddAtomConstraint(int(a+1))
-                constraints.AddAtomConstraint(int(b+1))
+#             # Adding a distance constraint does not lead to accurate results,
+#             # so the backup solution is to freeze the atoms in place
+#             if tight_constraint:
+#                 constraints.AddAtomConstraint(int(a+1))
+#                 constraints.AddAtomConstraint(int(b+1))
 
-            else:
-                if constrained_distances is None:
-                    first_atom = mol.GetAtom(int(a+1))
-                    length = first_atom.GetDistance(int(b+1))
-                else:
-                    length = constrained_distances[i]
+#             else:
+#                 if constrained_distances is None:
+#                     first_atom = mol.GetAtom(int(a+1))
+#                     length = first_atom.GetDistance(int(b+1))
+#                 else:
+#                     length = constrained_distances[i]
                 
-                constraints.AddDistanceConstraint(int(a+1), int(b+1), length)       # Angstroms
+#                 constraints.AddDistanceConstraint(int(a+1), int(b+1), length)       # Angstroms
 
-                # constraints.AddAngleConstraint(1, 2, 3, 120.0)      # Degrees
-                # constraints.AddTorsionConstraint(1, 2, 3, 4, 180.0) # Degrees
+#                 # constraints.AddAngleConstraint(1, 2, 3, 120.0)      # Degrees
+#                 # constraints.AddTorsionConstraint(1, 2, 3, 4, 180.0) # Degrees
 
-        # Setup the force field with the constraints
-        forcefield = ob.OBForceField.FindForceField(method)
-        forcefield.Setup(mol, constraints)
+#         # Setup the force field with the constraints
+#         forcefield = ob.OBForceField.FindForceField(method)
+#         forcefield.Setup(mol, constraints)
 
-        # Set the strictness of the constraint
-        forcefield.SetConstraints(constraints)
+#         # Set the strictness of the constraint
+#         forcefield.SetConstraints(constraints)
 
-        # Do a nsteps conjugate gradient minimization
-        # (or less if converges) and save the coordinates to mol.
-        forcefield.ConjugateGradients(nsteps)
-        forcefield.GetCoordinates(mol)
-        energy = forcefield.Energy() * 0.2390057361376673 # kJ/mol to kcal/mol
+#         # Do a nsteps conjugate gradient minimization
+#         # (or less if converges) and save the coordinates to mol.
+#         forcefield.ConjugateGradients(nsteps)
+#         forcefield.GetCoordinates(mol)
+#         energy = forcefield.Energy() * 0.2390057361376673 # kJ/mol to kcal/mol
 
-        # Write the mol to a file
-        conv.WriteFile(mol,outname)
-        conv.CloseOutFile()
+#         # Write the mol to a file
+#         conv.WriteFile(mol,outname)
+#         conv.CloseOutFile()
 
-        opt_coords = read_xyz(outname).atomcoords[0]
+#         opt_coords = read_xyz(outname).atomcoords[0]
 
-        # clean_directory((f'{title}_in.xyz', f'{title}_out.xyz'))
+#         # clean_directory((f'{title}_in.xyz', f'{title}_out.xyz'))
         
-        return opt_coords
+#         return opt_coords
         
 def clean_directory(to_remove=None):
 

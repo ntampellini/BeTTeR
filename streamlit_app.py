@@ -7,7 +7,8 @@ from rdkit.Chem import AllChem, Draw
 # from rdkit.Chem.Draw import IPythonConsole
 
 from functions import (_get_rotation_mask, _get_torsions, clean_directory,
-                       compenetration_check, dihedral, norm_of, openbabel_opt,
+                       compenetration_check, dihedral, norm_of,
+                    #    openbabel_opt,
                        read_xyz, rotate_dihedral, sanitize_conformer,
                        write_xyz)
 from lib import (build_peptide, correct_amides, draw, fragment_dict,
@@ -114,13 +115,13 @@ def streamlit_run(smiles, name, turn, tweak, opt):
                     coords = temp_coords
                     print(f'TWEAK -> Improved Δd to {round(d,2)} A')
 
-    if opt:
-        with st.spinner(text="Performing a FF geometry optimization..."):
-            # optimize it
-            coords = openbabel_opt(coords, data.atomnos, constrained_indexes=[hairpin_hb], constrained_distances=[2.0])
-            coords = openbabel_opt(coords, data.atomnos, [])
-            d = abs(norm_of(coords[hairpin_hb[0]] - coords[hairpin_hb[1]]) - 2)
-            print(f'OPT -> Optimized Δd to {round(d,2)} A')
+    # if opt:
+    #     with st.spinner(text="Performing a FF geometry optimization..."):
+    #         # optimize it
+    #         coords = openbabel_opt(coords, data.atomnos, constrained_indexes=[hairpin_hb], constrained_distances=[2.0])
+    #         coords = openbabel_opt(coords, data.atomnos, [])
+    #         d = abs(norm_of(coords[hairpin_hb[0]] - coords[hairpin_hb[1]]) - 2)
+    #         print(f'OPT -> Optimized Δd to {round(d,2)} A')
 
     with open(f'{name}.xyz', 'w') as f:
         write_xyz(coords, data.atomnos, f, title='Embedded via SAAD')
@@ -171,7 +172,10 @@ if __name__ == "__main__":
         turn = st.selectbox('Turn type', turn_dict.keys())
 
         tweak = st.checkbox('Autocorrect dihedrals after embedding (a bit slower)', value=True)
-        opt = st.checkbox('Force Field optimization with Openbabel (slower but better)', value=False)
+        # opt = st.checkbox('Force Field optimization with Openbabel (slower but better)', value=False)
+        opt = False
+        st.text('(Openbabel FF optimization and 3D structure rendering not working on Streamlit...)')
+
 
         if st.button('Run'):
             if input_format == 'Amino acid sequence':

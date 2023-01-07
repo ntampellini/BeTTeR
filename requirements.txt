@@ -1,7 +1,7 @@
 numba==0.56.4
 numpy==1.22.3
 rdkit==2022.09.3
-openbabel==3.1.1.1
+# openbabel==3.1.1.1 a bug prevents pip from installing OB, and Streamlit does not work with conda... 
 cclib==1.7.2
 periodictable==1.6.1
 networkx==2.8.8
