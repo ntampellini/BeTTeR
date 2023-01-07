@@ -7,3 +7,4 @@ periodictable==1.6.1
 networkx==2.8.8
 py3dmol==1.8.1
 streamlit==1.16.0
+ipython==8.7.0
